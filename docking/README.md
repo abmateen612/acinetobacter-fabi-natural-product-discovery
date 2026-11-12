@@ -1,33 +1,36 @@
 # Molecular Docking
 
-This directory contains the molecular docking results generated during virtual screening of the filtered natural-product library against FabI from *Acinetobacter baumannii*.
+Docking of the filtered NPASS natural-product library against FabI from *Acinetobacter baumannii* (PDB: 6AHE, NAD retained).
 
-## Docking Software
+## Software and settings
 
-Molecular docking was performed using **AutoDock Vina**.
+| Setting | Value |
+|---|---|
+| Program | AutoDock Vina |
+| Receptor | `protein/receptor.pdbqt` |
+| Grid centre | -37.508, -7.028, -3.125 |
+| Grid size | 26 x 26 x 30 Å |
+| Exhaustiveness | 32 |
+| Poses kept | top-ranked pose per compound |
 
-The prepared FabI receptor was docked against the compounds that passed the RDKit-based chemical filtering stage.
+## Protocol validation
 
-## Docking Prioritization
+The native ligand AFN-1252 was redocked with the same settings. RMSD to the crystallographic pose: 1.73 Å (28 heavy atoms, no superposition). Docking score: -10.8 kcal/mol, used as the reference value.
 
-A docking-score threshold of:
+## Docking and prioritization
 
-**≤ −8 kcal/mol**
+All 369 compounds that passed RDKit filtering were docked. Compounds with a score of -8.0 kcal/mol or better were kept:
 
-was used as an initial prioritization criterion.
+**369 compounds → 128 compounds**
 
-This resulted in:
-
-**2,703 compounds → 471 prioritized compounds**
-
-These 471 compounds were subsequently subjected to PCA, clustering, ligand-efficiency analysis, and further structural evaluation.
+These 128 compounds were then used for PCA, KMeans clustering, ligand-efficiency filtering and interaction analysis.
 
 ## Files
 
 | File | Description |
 |---|---|
-| `docking_scores.csv` | Docking scores for the screened compounds used for docking-based prioritization |
+| `docking_scores_369.csv` | Vina score of each of the 369 docked compounds, plus the AFN-1252 reference row (to be added) |
 
-## Important Note
+## Note
 
-Docking scores represent computational predictions and should not be interpreted as experimentally measured binding affinities.
+Docking scores are computational predictions and are not measured binding affinities. Scores from different programs cannot be compared directly.
