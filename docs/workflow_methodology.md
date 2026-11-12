@@ -1,70 +1,49 @@
 # Workflow and Methodology
 
-Current workflow of the FabI virtual screening project. Only the NPASS natural
-product library is used. This replaces the earlier multi-library version.
+Workflow of the FabI virtual screening project. Only the NPASS natural product library is used.
 
-**Status:** research code for an article in preparation. No final results are
-reported here.
+**Status:** research code accompanying a manuscript in preparation. All results are computational and have not been tested experimentally.
 
 ## Pipeline
 
 | Step | Method | Compounds left |
 |---|---|---|
-| 0 | NPASS library ([release / date]) | ~96,000 |
-| 1 | RDKit filtering: Lipinski (0 violations), PAINS, QED, ADMET, rotatable bonds < 10, eNTRy rules | 369 |
-| 2 | AutoDock Vina docking, score <= -8 kcal/mol | 128 |
+| 0 | NPASS library (2023 update) | ~94,400 |
+| 1 | RDKit filtering: invalid/duplicate removal, Lipinski (0 violations), PAINS, rotatable bonds < 10, predicted ADMET | 369 |
+| 2 | AutoDock Vina docking, score <= -8.0 kcal/mol | 128 |
 | 3 | Morgan fingerprint PCA + KMeans (k = 4), top 4 per cluster | 16 |
-| 4 | Ligand efficiency ranking | 9 |
-| 5 | 2D interaction analysis | 4 |
-| 6 | 100 ns molecular dynamics (GROMACS) | 4 |
+| 4 | Ligand efficiency >= 0.35 kcal/mol per heavy atom | 12 |
+| 5 | Complex preparation (failed for 2 compounds), then 2D interaction analysis | 10 → 4 |
+| 6 | 100 ns molecular dynamics (GROMACS) | 2 stable |
 
 ## Receptor
 
-PDB 6AHE (A. baumannii FabI, 2.29 A), prepared in UCSF Chimera. The NAD cofactor
-is kept in the receptor. The protocol was validated by redocking the native
-ligand AFN-1252: -10.2 kcal/mol, RMSD 0.365 A.
+PDB 6AHE (A. baumannii FabI with NAD and AFN-1252, 2.29 Å, homotetramer), prepared in UCSF Chimera 1.19. Water molecules, ions and non-essential chains were removed, and chain A was kept with its NAD cofactor. The native ligand (0WE) was saved separately for docking validation. NAD was kept in the receptor because AFN-1252 forms a ternary complex with FabI and the cofactor. Partial charges were assigned and the receptor was saved in PDBQT format. For MD, the cofactor was converted to NADH.
+
+## Docking validation
+
+The native ligand AFN-1252 was redocked into the NAD-bound receptor with the screening settings. The top pose was compared with the crystallographic pose (heavy-atom RMSD over 28 atoms, no superposition): RMSD 1.73 Å (below 2.0 Å). Docking score: -10.8 kcal/mol, used as the reference value.
 
 ## Filtering
 
-Compounds were filtered in RDKit with Lipinski's rule of five (0 violations),
-PAINS, QED, ADMET-related filters, rotatable bonds < 10, and the eNTRy rules
-for Gram-negative accumulation. 369 compounds remained.
+Compounds from NPASS were filtered in RDKit. Invalid structures and duplicates were removed. Compounds were kept only if they had no Lipinski violations, no PAINS substructures, fewer than 10 rotatable bonds, and favorable predicted ADMET properties. 369 compounds remained.
+
+## Ligand preparation
+
+3D structures were generated with ETKDGv3 (RDKit), minimized with MMFF94, and converted to PDBQT with Open Babel (Gasteiger charges).
 
 ## Docking
 
-AutoDock Vina on an HPC cluster (SLURM). Ligands were prepared with RDKit
-(ETKDGv3, MMFF) and converted to PDBQT with Open Babel (Gasteiger charges).
-
 | Setting | Value |
 |---|---|
+| Program | AutoDock Vina |
 | Grid centre | -37.508, -7.028, -3.125 |
-| Grid size | 26 x 26 x 30 A |
+| Grid size | 26 x 26 x 30 Å |
 | Exhaustiveness | 32 |
-| Score cut-off | <= -8 kcal/mol |
+| Poses kept | top-ranked pose per compound |
+| Score cut-off | <= -8.0 kcal/mol (128 compounds) |
 
 ## Selection
 
-- **Diversity:** Morgan fingerprints (radius 2, 1024 bits), PCA, KMeans with
-  k = 4 (elbow and silhouette). Top 4 compounds per cluster by docking score.
-- **Efficiency:** ranked by ligand efficiency, top 9 kept.
-- **Interactions:** 2D diagrams in Discovery Studio Visualizer; 4 compounds
-  chosen for MD.
-
-## Molecular dynamics
-
-GROMACS, CHARMM36 force field, CGenFF parameters for ligands and the cofactor
-(NADH). 100 ns production, 300 K, 1 bar, PME. Analysis: RMSD, RMSF, radius of
-gyration, hydrogen bonds and contacts.
-
-## Limitations
-
-Docking scores rank compounds but are not measured affinities. ADMET filters use
-predictions. All compounds are computational hits, not tested in the laboratory.
-
-## References
-
-- Rao et al. (2020). Chem Biol Drug Des 96, 704-713.
-- Zeng, X. et al. (2018). Nucleic Acids Res 46, D1217-D1222.
-- Eberhardt, J. et al. (2021). J Chem Inf Model 61, 3891-3898.
-- Abraham, M. J. et al. (2015). SoftwareX 1-2, 19-25.
-- Huang, J. et al. (2017). Nat Methods 14, 71-73.
+- **Diversity:** Morgan fingerprints (radius 2, 1024 bits), PCA (PC1 6.66%, PC2 4.67% of variance), KMeans with k = 4 chosen by elbow and silhouette analysis (cluster sizes 35, 27, 34, 32). Top 4 compounds per cluster by docking score gave 16 compounds.
+- **Efficiency:** ligand efficiency = -(docking score) / number of heavy atoms. Compounds with LE >= 0.35 were kept
