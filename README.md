@@ -40,7 +40,7 @@ RDKit filtering → 3D structure generation → PDBQT conversion → AutoDock Vi
 
 ### Chemical space (PCA)
 
-![PCA chemical space](figures/pca_chemical_space.png)
+![PCA chemical space](figures/PCA_Chemical_Space.png)
 
 ### Cluster selection (KMeans elbow and silhouette)
 
