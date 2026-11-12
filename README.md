@@ -44,7 +44,7 @@ RDKit filtering → 3D structure generation → PDBQT conversion → AutoDock Vi
 
 ### Cluster selection (KMeans elbow and silhouette)
 
-![KMeans elbow and silhouette](figures/kmeans_elbow_silhouette.png)
+![KMeans elbow and silhouette](figures/Kmeans_Elbow_Silhouette.png)
 
 ### Compounds selected for MD
 
