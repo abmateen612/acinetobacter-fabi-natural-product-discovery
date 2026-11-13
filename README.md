@@ -1,304 +1,255 @@
 # Structure-Based Discovery of Natural Product Candidates Targeting FabI in *Acinetobacter baumannii*
 
-**Computational Drug Discovery | Cheminformatics | Molecular Docking | Molecular Dynamics**
+## Overview
 
-## Project Overview
+This repository contains the computational workflow and results of a structure-based virtual screening study to identify potential natural product candidates targeting FabI, an essential enzyme involved in bacterial fatty acid biosynthesis in *Acinetobacter baumannii*.
 
-Antimicrobial resistance has increased the need to identify new antibacterial compounds with alternative mechanisms of action. Fatty acid biosynthesis provides potential opportunities for antibacterial drug discovery, including the enzyme enoyl-ACP reductase (FabI).
+Approximately 94,400 natural products from the NPASS database were screened using cheminformatics-based filtering, molecular docking, chemical space analysis, protein–ligand interaction analysis, and molecular dynamics (MD) simulations.
 
-This project presents a structure-based virtual screening pipeline to identify natural product candidates targeting FabI from *Acinetobacter baumannii*. Approximately 94,400 compounds from the NPASS database were processed through cheminformatics-based filtering, molecular docking, chemical-space analysis, ligand efficiency assessment, protein–ligand interaction analysis and molecular dynamics simulations.
+The study identified four candidates for MD simulations, with two showing comparatively stable binding poses during the 100 ns simulations.
 
-Four compounds were selected for molecular dynamics simulations. Among these, NPC87794 and NPC253314 maintained relatively stable binding poses during 100 ns simulations and were prioritized for further investigation.
+## Objectives
 
-**Research status:** Manuscript under preparation. All findings are computational and require experimental validation.
-
-## Research Objectives
-
-- Identify potential natural product candidates targeting *A. baumannii* FabI.
-- Develop a cheminformatics-based compound filtering and virtual screening pipeline.
-- Explore the chemical space of screened compounds using molecular fingerprints and clustering.
-- Prioritize candidates through docking scores, ligand efficiency and interaction analysis.
-- Investigate the stability of selected protein–ligand complexes through molecular dynamics simulations.
+- Identify potential FabI-targeting natural product candidates from the NPASS database.
+- Apply physicochemical, structural, and predicted ADMET-based filters to prioritize compounds.
+- Evaluate ligand binding using molecular docking and validate the docking protocol through redocking.
+- Explore chemical diversity using PCA and K-means clustering.
+- Compare protein–ligand interaction profiles and select candidates for MD simulations.
+- Investigate the dynamic stability of selected protein–ligand complexes.
 
 ## Computational Workflow
 
-NPASS library → RDKit filtering → 3D structure generation → ADMET assessment → AutoDock Vina docking → PCA and K-means clustering → Ligand efficiency filtering → Interaction analysis → 100 ns molecular dynamics
+| Screening stage | Compounds |
+|---|---:|
+| Initial NPASS library | ~94,400 |
+| After drug-likeness and ADMET filtering | 369 |
+| Docking score ≤ −8.0 kcal/mol | 128 |
+| Top four compounds from each cluster | 16 |
+| After ligand efficiency filtering | 12 |
+| Successfully prepared and analyzed complexes | 10 |
+| Selected for molecular dynamics | 4 |
+| Comparatively stable candidates during MD | 2 |
 
-## Screening Summary
+## Target Selection and Molecular Docking
 
-| Stage | Method | Compounds |
-|---|---|---:|
-| Initial library | NPASS natural product database | ~94,400 |
-| 1 | RDKit filtering and predicted ADMET assessment | 369 |
-| 2 | AutoDock Vina docking (score ≤ -8.0 kcal/mol) | 128 |
-| 3 | PCA and K-means clustering (4 clusters; top 4 per cluster) | 16 |
-| 4 | Ligand efficiency threshold (≥ 0.35) | 12 |
-| 5 | Complex preparation and interaction analysis | 10 analyzed |
-| 6 | Selection for molecular dynamics | 4 |
-| 7 | 100 ns molecular dynamics simulations | 2 relatively stable candidates |
+The crystal structure of *A. baumannii* FabI (PDB ID: **6AHE**) was retrieved from the Protein Data Bank and prepared for molecular docking.
 
-## Target Protein and Docking Validation
+AutoDock Vina was used for docking the filtered natural products. The docking protocol was validated by redocking the native ligand AFN-1252 into its binding site.
 
-**Target:** Enoyl-ACP reductase (FabI)  
-**Organism:** *Acinetobacter baumannii*  
-**Structure:** [PDB 6AHE](https://www.rcsb.org/structure/6AHE)  
-**Resolution:** 2.29 Å
-
-The crystal structure contains FabI in complex with the inhibitor AFN-1252 and a nicotinamide adenine dinucleotide cofactor.
-
-The receptor preparation retained protein chain A and the NAD cofactor for docking.
-
-### Redocking Validation
-
-The native inhibitor AFN-1252 was extracted and redocked into its binding site to assess the docking protocol.
+### Docking Validation
 
 | Parameter | Result |
 |---|---:|
-| Redocking score | -10.8 kcal/mol |
-| Heavy-atom RMSD | 1.73 Å |
-| RMSD acceptance threshold | 2.0 Å |
-
-The redocking RMSD was below the commonly used 2.0 Å threshold, supporting the ability of the docking protocol to reproduce the crystallographic binding pose.
-
-### Docking Parameters
-
-| Parameter | Setting |
-|---|---|
-| Software | AutoDock Vina |
-| Exhaustiveness | 32 |
-| Grid center X | -37.508 Å |
-| Grid center Y | -7.028 Å |
-| Grid center Z | -3.125 Å |
+| Protein structure | PDB: 6AHE |
+| Reference ligand | AFN-1252 |
+| Redocking RMSD | 1.73 Å |
+| Reference ligand docking score | −10.8 kcal/mol |
+| Vina exhaustiveness | 32 |
 | Grid dimensions | 26 × 26 × 30 Å |
-| Selection threshold | ≤ -8.0 kcal/mol |
+| Grid center | −37.508, −7.028, −3.125 |
 
-### Ligand Preparation
+The redocking RMSD of 1.73 Å supports the ability of the docking protocol to reproduce the reference ligand binding pose.
 
-- 3D conformer generation using RDKit ETKDGv3.
-- Geometry optimization using MMFF94.
-- PDBQT conversion using Open Babel.
-- Gasteiger partial charges for docking.
+## Cheminformatics and Compound Filtering
 
-## Cheminformatics and Chemical-Space Analysis
+The NPASS library was processed using RDKit to remove invalid structures and duplicate compounds. The remaining compounds were subjected to sequential filtering based on:
 
-The initial NPASS library was processed using RDKit to remove invalid and duplicate structures and apply molecular property filters.
+- Lipinski's Rule of Five, retaining compounds with zero violations.
+- PAINS structural alerts.
+- Rotatable bond count below 10.
+- Predicted ADMET properties using ADMET-AI.
 
-### Compound Filtering
+Following these filtering steps, 369 compounds were retained for molecular docking.
 
-The filtering pipeline included:
+Ligand structures were generated using ETKDGv3, energy-minimized using MMFF94, and prepared for docking using Open Babel and Gasteiger partial charges.
 
-- Lipinski's Rule of Five (zero violations).
-- PAINS substructure filtering.
-- Fewer than 10 rotatable bonds.
-- Predicted ADMET assessment using ADMET-AI.
+## Molecular Docking and Candidate Selection
 
-A total of 369 compounds passed the applied filtering criteria.
+Molecular docking was performed using AutoDock Vina. A total of 128 compounds with docking scores of ≤ −8.0 kcal/mol were retained for further analysis.
 
-### Chemical-Space Analysis
+Ligand efficiency was estimated to account for differences in molecular size. The compounds were subsequently prioritized using chemical space analysis and clustering.
 
-Morgan fingerprints (radius 2, 1024 bits) were generated to represent molecular structures.
+### Chemical Space Analysis
 
-Principal Component Analysis (PCA) was applied to explore chemical-space distribution, followed by K-means clustering using four clusters.
+Morgan fingerprints were generated using a radius of 2 and 1024 bits. Principal Component Analysis (PCA) was applied to explore the chemical space of the docked compounds.
 
-The first two principal components explained approximately 11.33% of the total variance.
+The first two principal components explained 6.66% and 4.67% of the variance, respectively, accounting for a combined 11.33%.
 
-The top four docking-scoring compounds from each cluster were selected for further assessment.
+![PCA Chemical Space Analysis](figures/pca_clusters.png)
 
-PCA and K-means were used for exploratory chemical-space analysis and candidate organization, not as predictive biological activity models.
+### K-means Clustering
 
-### PCA Chemical-Space Distribution
+K-means clustering was performed using the first two PCA components. The number of clusters was selected using the elbow method and silhouette analysis.
 
-The PCA plot illustrates the distribution of screened compounds across the four K-means clusters.
+Four clusters were obtained, with a silhouette score of approximately 0.504.
 
-![PCA chemical-space distribution](figures/pca_clusters.png)
+![K-means Elbow and Silhouette Analysis](figures/Kmeans_Elbow_Silhouette.png)
 
-[View PCA figure](figures/pca_clusters.png)
+The top four docking candidates from each cluster were selected, resulting in 16 compounds. Following ligand efficiency filtering, 12 compounds were retained. Two complexes could not be prepared successfully, leaving 10 compounds for protein–ligand interaction analysis.
 
-### K-means Cluster Optimization
+## Selected Compounds
 
-The elbow method and silhouette analysis were used to examine the clustering configuration.
+Four compounds were selected for subsequent molecular dynamics simulations based on docking scores, ligand efficiency, chemical diversity, and interaction analysis.
 
-![K-means elbow and silhouette analysis](figures/Kmeans_Elbow_Silhouette.png)
-
-[View K-means analysis](figures/Kmeans_Elbow_Silhouette.png)
-
-### Ligand Efficiency Assessment
-
-Ligand efficiency was estimated using docking scores normalized by the number of heavy atoms:
-
-LE = -Docking score / Number of heavy atoms
-
-Compounds with an estimated ligand efficiency of at least 0.35 kcal/mol per heavy atom were retained for further analysis.
-
-## Selected Natural Product Candidates
-
-Four compounds were prioritized following docking, clustering, ligand efficiency assessment and protein–ligand interaction analysis.
-
-| Compound | Cluster | Vina score (kcal/mol) | Heavy atoms | LE |
+| NPASS ID | Cluster | Vina Score (kcal/mol) | Heavy Atoms | Ligand Efficiency |
 |---|---:|---:|---:|---:|
-| NPC253314 | 3 | -11.1 | 31 | 0.358 |
-| NPC223274 | 4 | -10.4 | 23 | 0.452 |
-| NPC87794 | 1 | -10.0 | 22 | 0.455 |
-| NPC293138 | 1 | -9.3 | 20 | 0.465 |
-
-Reference inhibitor AFN-1252 had a redocking score of -10.8 kcal/mol.
+| NPC253314 | 3 | −11.1 | 31 | 0.358 |
+| NPC223274 | 4 | −10.4 | 23 | 0.452 |
+| NPC87794 | 1 | −10.0 | 22 | 0.455 |
+| NPC293138 | 1 | −9.3 | 20 | 0.465 |
 
 ## Protein–Ligand Interaction Analysis
 
-The selected compounds were further examined to characterize their interactions within the FabI binding pocket.
+Protein–ligand interaction diagrams were generated using **Discovery Studio Visualizer 2025**. Each diagram represents one compound and is named according to its NPASS compound ID.
 
-Two-dimensional interaction analysis was performed using Discovery Studio Visualizer to inspect the protein–ligand interaction patterns.
+The analysis was performed on docked complexes involving FabI (PDB: 6AHE), with the NAD cofactor retained.
 
-The four selected compounds were:
+The diagrams illustrate:
 
-- NPC253314
-- NPC223274
-- NPC87794
-- NPC293138
+- Hydrogen bonds
+- Hydrophobic interactions
+- Other protein–ligand contacts
+- Interacting amino acid residues
+- Interaction distances
 
-Interaction diagrams are available in the [`interaction_analysis/`](interaction_analysis/) directory.
+These interaction profiles were compared to support the selection of four compounds for subsequent molecular dynamics simulations.
+
+![Protein–Ligand Interaction Analysis](interaction_analysis/2D_interaction.png)
 
 ## Molecular Dynamics Simulations
 
-The four selected protein–ligand complexes and the reference inhibitor were subjected to 100 ns molecular dynamics simulations using GROMACS 2023.3.
+Molecular dynamics simulations were performed for the four selected protein–ligand complexes and the reference ligand AFN-1252 using GROMACS 2023.3.
 
 ### Simulation Setup
 
-| Parameter | Setting |
+| Parameter | Details |
 |---|---|
 | Software | GROMACS 2023.3 |
 | Force field | CHARMM36 |
 | Water model | TIP3P |
-| Ligand parameterization | CGenFF |
-| Cofactor | NADH |
+| Ligand parameters | CGenFF |
+| Simulation duration | 100 ns |
+| Time step | 2 fs |
+| Thermostat | V-rescale |
+| Barostat | Parrinello–Rahman |
+| Electrostatics | Particle Mesh Ewald (PME) |
+| Bond constraints | LINCS |
 | NVT equilibration | 1 ns |
 | NPT equilibration | 100 ps |
-| Production simulation | 100 ns |
-| Time step | 2 fs |
-| Temperature | 300 K |
-| Pressure | 1 bar |
-| Thermostat | V-rescale |
-| Barostat | Parrinello-Rahman |
-| Electrostatics | Particle Mesh Ewald (PME) |
-| Constraints | LINCS |
 
-Each system was simulated once for 100 ns.
-
-### Trajectory Analysis
-
-The following parameters were analyzed:
-
-- Ligand RMSD.
-- Ligand radius of gyration.
-- Protein RMSF.
-- Protein–ligand hydrogen bonds.
+NADH was retained as the enzyme cofactor during MD simulations. Each system was simulated once.
 
 ### Molecular Dynamics Results
 
-Values are reported as mean ± standard deviation.
+Ligand RMSD and hydrogen-bond analysis were used to investigate the stability of the protein–ligand complexes.
 
-| System | Ligand RMSD (nm) | Last 20 ns RMSD (nm) | Mean H-bonds | Frames with ≥1 H-bond |
+| Compound | Mean Ligand RMSD (nm) | Last 20 ns RMSD (nm) | Mean H-bonds | Frames with ≥1 H-bond |
 |---|---:|---:|---:|---:|
 | NPC87794 | 0.275 ± 0.048 | 0.256 ± 0.053 | 1.28 | 90.4% |
 | NPC253314 | 0.361 ± 0.041 | 0.392 ± 0.030 | 0.85 | 68.9% |
 | NPC223274 | 0.471 ± 0.204 | 0.704 ± 0.081 | 0.55 | 48.6% |
 | NPC293138 | 0.686 ± 0.243 | 0.958 ± 0.149 | 1.36 | 83.5% |
-| AFN-1252 (control) | 0.326 ± 0.076 | 0.384 ± 0.046 | 1.31 | 78.6% |
+| AFN-1252 | 0.326 ± 0.076 | 0.384 ± 0.046 | 1.31 | 78.6% |
 
-### Interpretation
+### MD Interpretation
 
-NPC87794 maintained a relatively stable binding pose throughout the simulation, with a mean ligand RMSD of 0.275 nm and hydrogen bonding observed in 90.4% of analyzed frames.
+NPC87794 maintained a comparatively stable ligand pose throughout the simulation, with a mean ligand RMSD of 0.275 nm and consistent hydrogen-bond interactions.
 
-NPC253314 also maintained a relatively stable binding pose, with a mean ligand RMSD of 0.361 nm.
+NPC253314 also showed comparatively stable behavior, although its ligand RMSD increased slightly during the final 20 ns.
 
-In comparison, NPC223274 showed a substantial increase in ligand RMSD after approximately 40 ns, while NPC293138 exhibited progressive displacement from its initial binding pose.
+NPC223274 exhibited a substantial increase in ligand RMSD after approximately 40 ns, while NPC293138 showed considerable ligand displacement from its initial binding pose.
 
-Based on these computational observations, NPC87794 and NPC253314 were prioritized for further investigation.
-
-Molecular dynamics analysis files and available results are organized in the [`md/`](md/) directory.
+Among the four candidates, NPC87794 and NPC253314 demonstrated comparatively favorable dynamic stability. These findings support their prioritization for further investigation but do not establish inhibitory activity.
 
 ## Repository Structure
 
 ```text
 acinetobacter-fabi-natural-product-discovery/
 │
-├── data/                    # Selected candidate compounds
-├── docking/                 # Molecular docking results
-├── docs/                    # Methodology documentation
-├── figures/                 # PCA and clustering visualizations
-├── interaction_analysis/    # Protein–ligand interaction diagrams
-├── md/                      # Molecular dynamics files and analysis
-├── notebooks/               # Cheminformatics and post-docking analysis
-├── protein/                 # Prepared receptor structures
+├── protein/
+│   └── FabI structure and preparation files
+│
+├── notebooks/
+│   └── Computational analysis notebooks
+│
+├── docking/
+│   └── Molecular docking files and results
+│
+├── data/
+│   └── Compound datasets and screening results
+│
+├── figures/
+│   ├── pca_clusters.png
+│   └── Kmeans_Elbow_Silhouette.png
+│
+├── interaction_analysis/
+│   └── Protein–ligand interaction diagrams
+│
+├── md/
+│   └── Molecular dynamics simulation files and analyses
+│
+├── docs/
+│   └── Additional methodology and documentation
 │
 ├── requirements.txt
-├── LICENSE
+├── workflow_methodology.md
 └── README.md
 ```
 
-## Computational Tools
+## Software and Tools
 
-| Tool | Application |
-|---|---|
-| Python | Computational workflow |
-| RDKit | Molecular processing and fingerprints |
-| Scikit-learn | PCA and K-means clustering |
-| AutoDock Vina | Molecular docking |
-| Open Babel | Molecular format conversion |
-| ADMET-AI | Predicted ADMET properties |
-| UCSF Chimera | Molecular structure preparation |
-| Discovery Studio Visualizer | Protein–ligand interaction analysis |
-| GROMACS | Molecular dynamics simulations |
-| CHARMM36 / CGenFF | Protein and ligand parameterization |
+The computational workflow used the following tools:
 
-## Installation and Requirements
+- **Python** – Computational analysis and data processing
+- **RDKit** – Molecular structure processing, filtering, and fingerprint generation
+- **ADMET-AI** – Predicted ADMET property assessment
+- **AutoDock Vina** – Molecular docking
+- **Open Babel** – Molecular structure conversion and preparation
+- **PCA and scikit-learn** – Dimensionality reduction and clustering
+- **Discovery Studio Visualizer 2025** – Protein–ligand interaction analysis
+- **GROMACS 2023.3** – Molecular dynamics simulations
+- **CGenFF** – Ligand force-field parameter generation
 
-Python dependencies are listed in `requirements.txt`.
+## Installation
 
-Install them using:
+Clone the repository:
+
+```bash
+git clone https://github.com/abmateen612/acinetobacter-fabi-natural-product-discovery.git
+cd acinetobacter-fabi-natural-product-discovery
+```
+
+Install the Python dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-The following external software packages are also required:
-
-- AutoDock Vina
-- Open Babel
-- UCSF Chimera
-- Discovery Studio Visualizer
-- GROMACS
-
-See [`docs/workflow_methodology.md`](docs/workflow_methodology.md) for additional methodology details.
+Additional software, including AutoDock Vina, Open Babel, Discovery Studio Visualizer, and GROMACS, should be installed separately according to their respective documentation.
 
 ## Limitations
 
-- Docking scores are computational estimates and do not represent experimentally measured binding affinities.
-- Docking validation was performed through redocking; decoy-based enrichment validation was not conducted.
-- ADMET properties were predicted computationally.
-- PCA and K-means provide exploratory chemical-space analysis rather than biological activity prediction.
-- Each molecular dynamics system was simulated once; independent replicate simulations are needed to assess reproducibility.
-- Binding free-energy calculations were not performed.
-- Gram-negative bacterial permeability and efflux were not experimentally assessed.
-- No biochemical, microbiological or cellular experiments have been performed.
-
-The selected compounds should therefore be considered computationally prioritized candidates rather than experimentally validated FabI inhibitors or antibiotics.
+- The findings are based entirely on computational predictions and require experimental validation.
+- Molecular docking scores provide estimates and do not directly establish binding affinity or inhibitory activity.
+- Docking validation was based on native ligand redocking; decoy-based enrichment analysis was not performed.
+- ADMET properties were computationally predicted and have not been experimentally confirmed.
+- Gram-negative bacterial permeability and efflux effects were not experimentally investigated.
+- Each molecular dynamics system was simulated once.
+- Binding free energy calculations were not performed.
 
 ## Data Availability
 
-- **Protein structure:** [RCSB Protein Data Bank, PDB 6AHE](https://www.rcsb.org/structure/6AHE)
-- **Natural product library:** [NPASS database](https://bidd.group/NPASS/)
-- **Source code:** Available in this repository.
+The computational workflow, analysis scripts, and available results are organized within this repository. Additional datasets and simulation files are provided in their respective directories where available.
 
 ## License
 
-This project is distributed under the MIT License. See [`LICENSE`](LICENSE).
+This project is distributed under the MIT License.
 
 ## Author
 
-**Mateen Ahmad**
+**Mateen Ahmad**  
+MS Biotechnology  
+COMSATS University Islamabad, Abbottabad Campus, Pakistan
 
-MS Biotechnology | Computational Drug Discovery
-
-- GitHub: [@abmateen612](https://github.com/abmateen612)
-- Repository: [Acinetobacter FabI Natural Product Discovery](https://github.com/abmateen612/acinetobacter-fabi-natural-product-discovery)
+- GitHub: https://github.com/abmateen612
+- Repository: https://github.com/abmateen612/acinetobacter-fabi-natural-product-discovery
